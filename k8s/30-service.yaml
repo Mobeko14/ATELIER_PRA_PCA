@@ -4,9 +4,10 @@ metadata:
   name: flask
   namespace: pra
 spec:
+  type: NodePort
   selector:
     app: flask
   ports:
     - port: 80
-      targetPort: 8080
-  type: ClusterIP
+      targetPort: 5000
+      nodePort: 30007
