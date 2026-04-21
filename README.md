@@ -281,3 +281,144 @@ Cet atelier PRA PCA, **noté sur 20 points**, est évalué sur la base du barèm
 - Qualité du Readme (lisibilité, erreur, ...) (3 points)
 - Processus travail (quantité de commits, cohérence globale, interventions externes, ...) (4 points) 
 
+
+
+Exercice 1 :
+Quels sont les composants dont la perte entraîne une perte de données ?
+
+La perte de données est liée aux composants de stockage persistant, et non aux pods.
+
+Les composants critiques sont :
+
+PVC pra-data
+→ contient la base SQLite (données de production)
+PV associé (volume physique)
+→ stockage réel sur le nœud
+
+Si ces éléments sont supprimés ou corrompus :
+
+Perte totale des données
+
+En revanche :
+
+la suppression d’un pod Flask n’entraîne pas de perte
+car les données sont externalisées dans le PVC
+
+
+Exercice 2:
+Expliquez pourquoi nous n'avons pas perdu les données lors de la suppression du PVC pra-data
+
+Attention : tel que formulé, c’est piégeux.
+
+Réponse correcte
+
+Lors de la suppression du PVC pra-data, les données de production sont bien perdues.
+
+MAIS nous n’avons pas perdu définitivement les données car :
+
+une copie de la base existe dans :
+le PVC pra-backup
+grâce au CronJob Kubernetes
+sauvegarde automatique toutes les minutes
+
+Donc :
+
+Les données de production sont perdues,
+mais restaurables via les sauvegardes
+
+
+
+Exercice 3:
+Quels sont les RTO et RPO de cette solution ?
+RPO (Recovery Point Objective)
+
+1 minute
+
+lié à la fréquence du CronJob
+perte maximale = dernières écritures non sauvegardées
+RPO ≈ 1 minute
+RTO (Recovery Time Objective)
+
+quelques secondes à 1–2 minutes
+
+temps de :
+recréer PVC
+lancer restauration
+redémarrer l’application
+RTO ≈ 30 secondes à 2 minutes
+
+
+Exercice 4:
+Pourquoi cette solution ne peut pas être utilisée en production ?
+
+Cette architecture est pédagogique mais non adaptée à la production.
+
+Limites majeures :
+1. Stockage local (local-path)
+dépend d’un seul nœud
+perte du nœud = perte des données
+2. Base SQLite
+base mono-fichier
+pas scalable
+pas adaptée à forte charge
+3. Pas de réplication
+un seul point de défaillance
+pas de haute disponibilité réelle
+4. Backup local uniquement
+sauvegardes stockées sur le même cluster
+pas de PRA réel multi-site
+5. Pas de sécurité
+pas de chiffrement
+pas de gestion des accès
+
+Conclusion :
+
+Solution adaptée à un lab, pas à un environnement critique
+
+
+
+Exercice 5:
+Proposez une architecture plus robuste
+Architecture recommandée
+1. Base de données robuste
+PostgreSQL / MySQL
+clusterisé (replication master/replica)
+2. Stockage distribué
+Ceph / Longhorn / EBS (cloud)
+haute disponibilité multi-nœuds
+3. Sauvegardes externalisées
+stockage externe :
+S3 / Azure Blob / Google Cloud Storage
+4. PRA multi-zone
+réplication dans un autre cluster ou région
+failover automatique
+5. Orchestration avancée
+Kubernetes + StatefulSets
+Helm / ArgoCD
+6. Supervision
+Prometheus + Grafana
+alerting (Alertmanager)
+7. Sécurité
+TLS
+RBAC
+gestion des secrets (Vault)
+Schéma logique
+Utilisateur
+   ↓
+Load Balancer
+   ↓
+Kubernetes Cluster
+   ↓
+Application (Pods)
+   ↓
+Base PostgreSQL clusterisée
+   ↓
+Stockage distribué (Ceph / Cloud)
+   ↓
+Backups → S3 (externe)
+
+Conclusion générale
+PCA → Kubernetes (pods auto-recréés)
+PRA → sauvegarde + restauration
+RPO → dépend de la fréquence des backups
+RTO → dépend de la procédure de reprise

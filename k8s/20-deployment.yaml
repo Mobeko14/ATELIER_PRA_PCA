@@ -15,14 +15,26 @@ spec:
     spec:
       containers:
         - name: flask
-          image: flask-pra:1.0
+          image: pra/flask-sqlite:2.0
           imagePullPolicy: Never
+
+          # 🔥 IMPORTANT : lance Flask en continu
+          command: ["python"]
+          args: ["/app/app.py"]
+
           ports:
             - containerPort: 5000
+
           volumeMounts:
             - name: data-volume
               mountPath: /data
+            - name: backup-volume
+              mountPath: /backup
+
       volumes:
         - name: data-volume
           persistentVolumeClaim:
             claimName: pra-data
+        - name: backup-volume
+          persistentVolumeClaim:
+            claimName: pra-backup

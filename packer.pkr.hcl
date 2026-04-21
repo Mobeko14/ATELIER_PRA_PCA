@@ -14,7 +14,7 @@ variable "image_name" {
 
 variable "image_tag" {
   type    = string
-  default = "1.0"
+  default = "2.0"
 }
 
 source "docker" "flask" {
@@ -26,25 +26,22 @@ build {
   name    = "pra-flask-sqlite"
   sources = ["source.docker.flask"]
 
-  # Copie le code dans l'image
   provisioner "file" {
-    source      = "app/"
-    destination = "/opt/app"
+    source      = "flask_app/"
+    destination = "/app"
   }
 
-  # Installe les dépendances
   provisioner "shell" {
     inline = [
       "set -eux",
-      "python -m pip install --no-cache-dir --upgrade pip",
-      "pip install --no-cache-dir -r /opt/app/requirements.txt",
+      "pip install --no-cache-dir --upgrade pip",
+      "pip install --no-cache-dir -r /app/requirements.txt",
       "mkdir -p /data",
-      "chmod 777 /data",
-      "echo 'Packer build done.'"
+      "chmod 777 /data"
     ]
   }
 
-  # Tag final de l'image
+  # 🔥 ICI le vrai CMD
   post-processor "docker-tag" {
     repository = var.image_name
     tags       = [var.image_tag]
