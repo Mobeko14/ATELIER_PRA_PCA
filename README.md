@@ -231,130 +231,51 @@ Faites preuve de pédagogie et soyez clair dans vos explications et procedures d
 **Exercice 1 :**  
 Quels sont les composants dont la perte entraîne une perte de données ?  
   
-*..Répondez à cet exercice ici..*
-
-**Exercice 2 :**  
-Expliquez nous pourquoi nous n'avons pas perdu les données lors de la supression du PVC pra-data  
-  
-*..Répondez à cet exercice ici..*
-
-**Exercice 3 :**  
-Quels sont les RTO et RPO de cette solution ?  
-  
-*..Répondez à cet exercice ici..*
-
-**Exercice 4 :**  
-Pourquoi cette solution (cet atelier) ne peux pas être utilisé dans un vrai environnement de production ? Que manque-t-il ?   
-  
-*..Répondez à cet exercice ici..*
-  
-**Exercice 5 :**  
-Proposez une archtecture plus robuste.   
-  
-*..Répondez à cet exercice ici..*
-
----------------------------------------------------
-Séquence 6 : Ateliers  
-Difficulté : Moyenne (~2 heures)
----------------------------------------------------
-### **Atelier 1 : Ajoutez une fonctionnalité à votre application**  
-**Ajouter une route GET /status** dans votre application qui affiche en JSON :
-* count : nombre d’événements en base
-* last_backup_file : nom du dernier backup présent dans /backup
-* backup_age_seconds : âge du dernier backup
-
-*..**Déposez ici une copie d'écran** de votre réussite..*
-
-![alt text](<Impression automatique.png>)
-
----------------------------------------------------
-### **Atelier 2 : Choisir notre point de restauration**  
-Aujourd’hui nous restaurobs “le dernier backup”. Nous souhaitons **ajouter la capacité de choisir un point de restauration**.
-
-*..Décrir ici votre procédure de restauration (votre runbook)..*  
-  
----------------------------------------------------
-Evaluation
----------------------------------------------------
-Cet atelier PRA PCA, **noté sur 20 points**, est évalué sur la base du barème suivant :  
-- Série d'exerices (5 points)
-- Atelier N°1 - Ajout d'un fonctionnalité (4 points)
-- Atelier N°2 - Choisir son point de restauration (4 points)
-- Qualité du Readme (lisibilité, erreur, ...) (3 points)
-- Processus travail (quantité de commits, cohérence globale, interventions externes, ...) (4 points) 
-
-
-
-Exercice 1 :
-Quels sont les composants dont la perte entraîne une perte de données ?
-
 La perte de données est liée aux composants de stockage persistant, et non aux pods.
-
 Les composants critiques sont :
-
 PVC pra-data
 → contient la base SQLite (données de production)
 PV associé (volume physique)
 → stockage réel sur le nœud
-
 Si ces éléments sont supprimés ou corrompus :
-
 Perte totale des données
-
-En revanche :
-
-la suppression d’un pod Flask n’entraîne pas de perte
+En revanche : la suppression d’un pod Flask n’entraîne pas de perte
 car les données sont externalisées dans le PVC
 
-
-Exercice 2:
-Expliquez pourquoi nous n'avons pas perdu les données lors de la suppression du PVC pra-data
-
+**Exercice 2 :**  
+Expliquez nous pourquoi nous n'avons pas perdu les données lors de la supression du PVC pra-data  
+  
 Attention : tel que formulé, c’est piégeux.
-
 Réponse correcte
-
 Lors de la suppression du PVC pra-data, les données de production sont bien perdues.
-
 MAIS nous n’avons pas perdu définitivement les données car :
-
 une copie de la base existe dans :
 le PVC pra-backup
 grâce au CronJob Kubernetes
 sauvegarde automatique toutes les minutes
-
-Donc :
-
-Les données de production sont perdues,
+Donc : Les données de production sont perdues,
 mais restaurables via les sauvegardes
 
-
-
-Exercice 3:
-Quels sont les RTO et RPO de cette solution ?
+**Exercice 3 :**  
+Quels sont les RTO et RPO de cette solution ?  
+  
 RPO (Recovery Point Objective)
-
 1 minute
-
 lié à la fréquence du CronJob
 perte maximale = dernières écritures non sauvegardées
 RPO ≈ 1 minute
 RTO (Recovery Time Objective)
-
 quelques secondes à 1–2 minutes
-
 temps de :
 recréer PVC
 lancer restauration
 redémarrer l’application
 RTO ≈ 30 secondes à 2 minutes
 
-
-Exercice 4:
-Pourquoi cette solution ne peut pas être utilisée en production ?
-
+**Exercice 4 :**  
+Pourquoi cette solution (cet atelier) ne peux pas être utilisé dans un vrai environnement de production ? Que manque-t-il ?   
+  
 Cette architecture est pédagogique mais non adaptée à la production.
-
 Limites majeures :
 1. Stockage local (local-path)
 dépend d’un seul nœud
@@ -373,14 +294,11 @@ pas de PRA réel multi-site
 pas de chiffrement
 pas de gestion des accès
 
-Conclusion :
+Conclusion :Solution adaptée à un lab, pas à un environnement critique
+  
+**Exercice 5 :**  
+Proposez une archtecture plus robuste.   
 
-Solution adaptée à un lab, pas à un environnement critique
-
-
-
-Exercice 5:
-Proposez une architecture plus robuste
 Architecture recommandée
 1. Base de données robuste
 PostgreSQL / MySQL
@@ -424,3 +342,43 @@ PCA → Kubernetes (pods auto-recréés)
 PRA → sauvegarde + restauration
 RPO → dépend de la fréquence des backups
 RTO → dépend de la procédure de reprise
+
+---------------------------------------------------
+Séquence 6 : Ateliers  
+Difficulté : Moyenne (~2 heures)
+---------------------------------------------------
+### **Atelier 1 : Ajoutez une fonctionnalité à votre application**  
+**Ajouter une route GET /status** dans votre application qui affiche en JSON :
+* count : nombre d’événements en base
+* last_backup_file : nom du dernier backup présent dans /backup
+* backup_age_seconds : âge du dernier backup
+
+*..**Déposez ici une copie d'écran** de votre réussite..*
+
+![alt text](<Impression automatique.png>)
+
+---------------------------------------------------
+### **Atelier 2 : Choisir notre point de restauration**  
+Aujourd’hui nous restaurobs “le dernier backup”. Nous souhaitons **ajouter la capacité de choisir un point de restauration**.
+
+*..Décrir ici votre procédure de restauration (votre runbook)..*
+Procédure de restauration avec choix du backup
+1- Lister les sauvegardes disponibles : ls -lh /backup
+2- Choisir un fichier de restauration : app-1776759421.db
+3- Lancer un pod avec accès aux volumes : kubectl -n pra run restore ...
+4- Restaurer la base : cp /backup/<fichier> /data/app.db
+5- Redémarrer l’application : kubectl delete pod -n pra -l app=flask
+6-Vérifier : /count
+
+  
+---------------------------------------------------
+Evaluation
+---------------------------------------------------
+Cet atelier PRA PCA, **noté sur 20 points**, est évalué sur la base du barème suivant :  
+- Série d'exerices (5 points)
+- Atelier N°1 - Ajout d'un fonctionnalité (4 points)
+- Atelier N°2 - Choisir son point de restauration (4 points)
+- Qualité du Readme (lisibilité, erreur, ...) (3 points)
+- Processus travail (quantité de commits, cohérence globale, interventions externes, ...) (4 points) 
+
+
