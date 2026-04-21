@@ -265,6 +265,8 @@ Difficulté : Moyenne (~2 heures)
 
 *..**Déposez ici une copie d'écran** de votre réussite..*
 
+![alt text](<Impression automatique.png>)
+
 ---------------------------------------------------
 ### **Atelier 2 : Choisir notre point de restauration**  
 Aujourd’hui nous restaurobs “le dernier backup”. Nous souhaitons **ajouter la capacité de choisir un point de restauration**.
